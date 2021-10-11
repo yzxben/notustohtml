@@ -195,6 +195,13 @@ class _NotusHtmlEncoder extends Converter<Delta, String> {
       _writeBlockTag(buffer, attribute as NotusAttribute<String>, close: close);
     } else if (attribute.key == NotusAttribute.embed.key) {
       _writeEmbedTag(buffer, attribute as EmbedAttribute, close: close);
+    } else if (attribute == NotusAttribute.underline) {
+      buffer.write(!close ? "<u>" : "</u>");
+    } else if (attribute == NotusAttribute.strike) {
+      buffer.write(!close ? "<del>" : "</del>");
+    } else if (attribute.key == NotusAttribute.color.key) {
+      buffer.write(
+          !close ? "<span style=\"color:${attribute.value};\">" : "</span>");
     } else {
       throw ArgumentError('Cannot handle $attribute');
     }
@@ -275,7 +282,10 @@ class _NotusHtmlDecoder extends Converter<String, Delta> {
         element.children.forEach((child) {
           delta = _parseElement(
               child, delta, _supportedElements[child.localName],
-              listType: "ul", next: next, isNewLine: isNewLine, inBlock: inBlock);
+              listType: "ul",
+              next: next,
+              isNewLine: isNewLine,
+              inBlock: inBlock);
           return delta;
         });
       }
@@ -283,7 +293,10 @@ class _NotusHtmlDecoder extends Converter<String, Delta> {
         element.children.forEach((child) {
           delta = _parseElement(
               child, delta, _supportedElements[child.localName],
-              listType: "ol", next: next, isNewLine: isNewLine, inBlock: inBlock);
+              listType: "ol",
+              next: next,
+              isNewLine: isNewLine,
+              inBlock: inBlock);
           return delta;
         });
       }
@@ -338,7 +351,10 @@ class _NotusHtmlDecoder extends Converter<String, Delta> {
         var next;
         if (index + 1 < element.nodes.length) next = element.nodes[index + 1];
         delta = _parseNode(node, delta, next,
-            isNewLine: element.localName == "li" || element.localName == "p" || element.localName == "div", inBlock: blockAttributes);
+            isNewLine: element.localName == "li" ||
+                element.localName == "p" ||
+                element.localName == "div",
+            inBlock: blockAttributes);
       });
       if (inBlock == null) {
         delta..insert("\n", blockAttributes);
@@ -374,8 +390,8 @@ class _NotusHtmlDecoder extends Converter<String, Delta> {
       if (element.children.isEmpty) {
         if (attributes["a"] != null) {
           delta..insert(element.text, attributes);
-          if ((isNewLine == null || (isNewLine != null && !isNewLine)) && inBlock == null)
-            delta..insert("\n");
+          if ((isNewLine == null || (isNewLine != null && !isNewLine)) &&
+              inBlock == null) delta..insert("\n");
         } else {
           if (next != null &&
               next.runtimeType == Element &&
@@ -392,12 +408,10 @@ class _NotusHtmlDecoder extends Converter<String, Delta> {
             if (elementType == null) {
               return;
             }
-            delta = _parseElement(
-                node, delta, elementType,
+            delta = _parseElement(node, delta, elementType,
                 attributes: attributes, next: next);
-
           } else if (node.runtimeType == Text) {
-            delta = _parseNode(node, delta,  next);
+            delta = _parseNode(node, delta, next);
           }
         });
       }
